@@ -84,7 +84,6 @@ video{
 const video = document.getElementById("video");
 
 let targetTime = 0;
-let currentTime = 0;
 
 let targetLookX = 0;
 let currentLookX = 0;
@@ -99,13 +98,13 @@ let ready = false;
    VIDEO READY
 ========================= */
 
-video.addEventListener("loadedmetadata", () => {
+video.addEventListener("canplay", () => {
 
     ready = true;
 
     video.pause();
 
-    requestAnimationFrame(loop);
+    console.log("VIDEO READY");
 
 });
 
@@ -119,7 +118,13 @@ window.addEventListener("wheel", (e) => {
 
     if(!ready) return;
 
-    targetTime += e.deltaY * 0.001;
+    e.preventDefault();
+
+    targetTime += e.deltaY * 0.002;
+
+
+
+    /* LIMITES */
 
     if(targetTime < 0){
         targetTime = 0;
@@ -128,6 +133,12 @@ window.addEventListener("wheel", (e) => {
     if(targetTime > video.duration){
         targetTime = video.duration;
     }
+
+
+
+    /* SEEK DIRECTO */
+
+    video.currentTime = targetTime;
 
 });
 
@@ -148,10 +159,8 @@ window.addEventListener("mousemove", (e) => {
 
 
 /* =========================
-   LOOP
+   LOOP VISUAL
 ========================= */
-
-let lastSeek = 0;
 
 function loop(){
 
@@ -159,39 +168,18 @@ function loop(){
 
 
 
-    /* SUAVIZAR TIEMPO */
-
-    currentTime += (targetTime - currentTime) * 0.15;
-
-
-
-    /* SEEK CONTROLADO */
-
-    if(Math.abs(currentTime - lastSeek) > 0.03){
-
-        video.currentTime = currentTime;
-
-        lastSeek = currentTime;
-
-    }
-
-
-
-    /* SUAVIZAR LOOK */
-
     currentLookX +=
         (targetLookX - currentLookX) * 0.08;
 
 
-
-    /* TRANSFORM */
 
     video.style.transform =
         `translateX(${currentLookX}px) scale(1.05)`;
 
 }
 
-</script>
+loop();
 
+</script>
 </body>
 </html>
