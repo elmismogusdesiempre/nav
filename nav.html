@@ -84,30 +84,42 @@ video{
 const video = document.getElementById("video");
 
 let targetTime = 0;
-let smoothTime = 0;
+let currentTime = 0;
 
 let targetLookX = 0;
-let smoothLookX = 0;
+let currentLookX = 0;
 
 const MAX_LOOK = 140;
 
-video.addEventListener("loadedmetadata", ()=>{
+let ready = false;
+
+
+
+/* =========================
+   VIDEO READY
+========================= */
+
+video.addEventListener("loadedmetadata", () => {
+
+    ready = true;
 
     video.pause();
 
-    animate();
+    requestAnimationFrame(loop);
 
 });
 
 
 
 /* =========================
-   SCROLL = AVANZAR
+   SCROLL
 ========================= */
 
-window.addEventListener("wheel", (e)=>{
+window.addEventListener("wheel", (e) => {
 
-    targetTime += e.deltaY * 0.0015;
+    if(!ready) return;
+
+    targetTime += e.deltaY * 0.001;
 
     if(targetTime < 0){
         targetTime = 0;
@@ -122,10 +134,10 @@ window.addEventListener("wheel", (e)=>{
 
 
 /* =========================
-   MOUSE = MIRAR LADOS
+   MOUSE LOOK
 ========================= */
 
-window.addEventListener("mousemove", (e)=>{
+window.addEventListener("mousemove", (e) => {
 
     const percent = e.clientX / window.innerWidth;
 
@@ -136,38 +148,46 @@ window.addEventListener("mousemove", (e)=>{
 
 
 /* =========================
-   LOOP PRINCIPAL
+   LOOP
 ========================= */
 
-function animate(){
+let lastSeek = 0;
 
-    requestAnimationFrame(animate);
+function loop(){
+
+    requestAnimationFrame(loop);
 
 
 
     /* SUAVIZAR TIEMPO */
 
-    smoothTime += (targetTime - smoothTime) * 0.08;
+    currentTime += (targetTime - currentTime) * 0.15;
 
-    if(Math.abs(video.currentTime - smoothTime) > 0.01){
 
-        video.currentTime = smoothTime;
+
+    /* SEEK CONTROLADO */
+
+    if(Math.abs(currentTime - lastSeek) > 0.03){
+
+        video.currentTime = currentTime;
+
+        lastSeek = currentTime;
 
     }
 
 
 
-    /* SUAVIZAR MIRADA */
+    /* SUAVIZAR LOOK */
 
-    smoothLookX += (targetLookX - smoothLookX) * 0.08;
+    currentLookX +=
+        (targetLookX - currentLookX) * 0.08;
 
 
 
-    /* MOVER VIDEO */
+    /* TRANSFORM */
 
     video.style.transform =
-        `translateX(${smoothLookX}px) scale(1.05)`;
-
+        `translateX(${currentLookX}px) scale(1.05)`;
 
 }
 
